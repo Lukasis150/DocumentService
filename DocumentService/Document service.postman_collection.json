@@ -1,0 +1,188 @@
+{
+	"info": {
+		"_postman_id": "d9265987-b637-484d-8b0f-3d49873505e2",
+		"name": "Document service",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "19334703"
+	},
+	"item": [
+		{
+			"name": "Upload document",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"id\": \"{{my_guid}}\",\r\n  \"tags\": [\r\n    \".net\", \"microsoft\", \"testing\", \"for developers\"\r\n  ],\r\n  \"data\": {\r\n    \"fileName\": \"{{initial_filename}}\",\r\n    \"fileDataBase64\": \"{{initial_data}}\"\r\n  }\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://localhost:5000/Document",
+					"protocol": "https",
+					"host": [
+						"localhost"
+					],
+					"port": "5000",
+					"path": [
+						"Document"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Update document",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {\r",
+							"  pm.response.to.have.status(200);\r",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"id\": \"{{my_guid}}\",\r\n  \"tags\": [\r\n    \"new\", \"tag\", \"my\", \"notebook and pc\"\r\n  ],\r\n  \"data\": {\r\n    \"fileName\": \"{{updated_filename}}\",\r\n    \"fileDataBase64\": \"{{updated_data}}\"\r\n  }\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://localhost:5000/Document",
+					"protocol": "https",
+					"host": [
+						"localhost"
+					],
+					"port": "5000",
+					"path": [
+						"Document"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get document",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true,
+				"disabledSystemHeaders": {
+					"accept": true
+				}
+			},
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/xml",
+						"type": "text",
+						"disabled": true
+					}
+				],
+				"body": {
+					"mode": "formdata",
+					"formdata": []
+				},
+				"url": {
+					"raw": "https://localhost:5000/Document/{{my_guid}}",
+					"protocol": "https",
+					"host": [
+						"localhost"
+					],
+					"port": "5000",
+					"path": [
+						"Document",
+						"{{my_guid}}"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "my_guid",
+			"value": "846bee1d-290e-49f3-9063-a43010a6fe8f",
+			"type": "string"
+		},
+		{
+			"key": "initial_filename",
+			"value": "initial.txt",
+			"type": "string"
+		},
+		{
+			"key": "updated_filename",
+			"value": "updated.txt",
+			"type": "string"
+		},
+		{
+			"key": "initial_data",
+			"value": "dGVzdFg=",
+			"type": "string"
+		},
+		{
+			"key": "updated_data",
+			"value": "VGhlIGRvY3VtZW50cyBhcmUgc2VuZCBhcyBhIHBheWxvYWQgb2YgUE9TVCByZXF1ZXN0IGluIEpTT04gZm9ybWF0IGFuZCBjb3VsZCBiZSBtb2RpZmllZCB2aWEgUFVUIHZlcmIuDQo=",
+			"type": "string"
+		},
+		{
+			"key": "wrong_filename",
+			"value": "wrongFilename",
+			"type": "string"
+		}
+	]
+}
