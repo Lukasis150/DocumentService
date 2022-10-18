@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using System.IO.Abstractions;
+﻿using System.IO.Abstractions;
 
 namespace DocumentService.Models
 {
@@ -18,9 +17,10 @@ namespace DocumentService.Models
             _fileWrapper = fileWrapper;
 
             if (_basePath == null)
-            {
                 _logger.LogInformation("Your base path is null");
-            }
+
+            if (!Directory.Exists(Path.Combine(_basePath)))
+                throw new Exception("Base path from config does not exists");
         }
 
         public async Task<byte[]> GetFileAsync(string fileName)
@@ -38,11 +38,6 @@ namespace DocumentService.Models
 
         public async Task SaveFileAsync(string fileName, byte[] fileData)
         {
-            if (Directory.Exists(fileName))
-            {
-                throw new Exception("Directory from config does not exists on HDD.");
-            }
-
             string path = Path.Combine(_basePath, fileName);
             if (!_fileWrapper.File.Exists(path))
             {
@@ -57,11 +52,6 @@ namespace DocumentService.Models
 
         public async Task UpdateFileAsync(string fileName, byte[] fileData)
         {
-            if (Directory.Exists(fileName))
-            {
-                throw new Exception("Directory from config does not exists on HDD.");
-            }
-
             string path = Path.Combine(_basePath, fileName);
             if (_fileWrapper.File.Exists(path))
             {
