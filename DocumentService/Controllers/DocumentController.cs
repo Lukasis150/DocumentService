@@ -3,6 +3,7 @@ using DocumentService.Dto;
 using DocumentService.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.Options;
 
 namespace DocumentService.Controllers
@@ -32,53 +33,58 @@ namespace DocumentService.Controllers
         [HttpPost]
         public async Task<IActionResult> UploadDocument(DocumentDto documentModel)
         {
-            try
+            using (var transaction = _context.Database.BeginTransaction())
             {
-                if (!ModelState.IsValid)
+                try
                 {
-                    return BadRequest(ModelState);
+                    if (!ModelState.IsValid)
+                    {
+                        return BadRequest(ModelState);
+                    }
+
+                    string[] tagsString = documentModel.Tags.Select(t => t.ToLower()).ToArray();
+
+                    string fileDataInBase64 = documentModel.Data.FileDataBase64;
+
+                    if (String.IsNullOrEmpty(fileDataInBase64))
+                        return BadRequest("File data is null.");
+
+                    byte[] fileData = new byte[0];
+                    if (!TryGetFromBase64String(fileDataInBase64, out fileData))
+                        return BadRequest("Cannot parse data from base 64 format.");
+
+                    string fileName = documentModel.Data.FileName;
+                    if (String.IsNullOrEmpty(fileName))
+                        return BadRequest("Filename is null.");
+
+                    if (string.IsNullOrEmpty(fileName) && fileName.IndexOfAny(Path.GetInvalidFileNameChars()) > 0)
+                        return BadRequest("Wrong file name.");
+
+                    if (fileName.Split('.').Length != 2)
+                        return BadRequest("File name must contains extension.");
+
+                    DocumentMetadataModel documentMetadataModel = new DocumentMetadataModel()
+                    {
+                        Id = documentModel.Id,
+                        FileName = fileName,
+                    };
+
+                    List<TagModel> documentTags = await GetTags(tagsString);
+                    List<MetadataTagsLinkModel> tagLinks = GetTagLinks(documentTags, documentMetadataModel);
+
+                    documentMetadataModel.MetadataTagsLinks.AddRange(tagLinks);
+
+                    await _metadataStorageManager.SaveMetadata(documentMetadataModel);
+                    await _fileStorageManager.SaveFileAsync(documentModel.Id.ToString(), fileData);
+
+                    transaction.Commit();
+                    return Ok("Document successfuly uploaded.");
                 }
-
-                string[] tagsString = documentModel.Tags.Select(t => t.ToLower()).ToArray();
-
-                string fileDataInBase64 = documentModel.Data.FileDataBase64;
-
-                if (String.IsNullOrEmpty(fileDataInBase64))
-                    return BadRequest("File data is null.");
-
-                byte[] fileData = new byte[0];
-                if (!TryGetFromBase64String(fileDataInBase64, out fileData))
-                    return BadRequest("Cannot parse data from base 64 format.");
-
-                string fileName = documentModel.Data.FileName;
-                if (String.IsNullOrEmpty(fileName))
-                    return BadRequest("Filename is null.");
-
-                if (string.IsNullOrEmpty(fileName) && fileName.IndexOfAny(Path.GetInvalidFileNameChars()) > 0)
-                    return BadRequest("Wrong file name.");
-
-                if (fileName.Split('.').Length != 2)
-                    return BadRequest("File name must contains extension.");
-
-                DocumentMetadataModel documentMetadataModel = new DocumentMetadataModel()
+                catch (Exception ex)
                 {
-                    Id = documentModel.Id,
-                    FileName = fileName,
-                };
-
-                List<TagModel> documentTags = await GetTags(tagsString);
-                List<MetadataTagsLinkModel> tagLinks = GetTagLinks(documentTags, documentMetadataModel);
-
-                documentMetadataModel.MetadataTagsLinks.AddRange(tagLinks);
-
-                await _metadataStorageManager.SaveMetadata(documentMetadataModel);
-                await _fileStorageManager.SaveFileAsync(documentModel.Id.ToString(), fileData);
-
-                return Ok("Document successfuly uploaded.");
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
+                    transaction.Rollback();
+                    return BadRequest(ex.Message);
+                }
             }
         }
 
@@ -102,55 +108,60 @@ namespace DocumentService.Controllers
         [HttpPut]
         public async Task<IActionResult> UpdateDocument(DocumentDto documentModel)
         {
-            try
+            using (var transaction = _context.Database.BeginTransaction())
             {
-                if (!ModelState.IsValid)
+                try
                 {
-                    return BadRequest(ModelState);
+                    if (!ModelState.IsValid)
+                    {
+                        return BadRequest(ModelState);
+                    }
+
+                    string[] tagsString = documentModel.Tags.Select(t => t.ToLower()).ToArray();
+
+                    string fileDataInBase64 = documentModel.Data.FileDataBase64;
+
+                    if (String.IsNullOrEmpty(fileDataInBase64))
+                        return BadRequest("File data is null.");
+
+                    byte[] fileData = new byte[0];
+                    if (!TryGetFromBase64String(fileDataInBase64, out fileData))
+                        return BadRequest("Cannot parse data from base 64 format.");
+
+                    string fileName = documentModel.Data.FileName;
+
+                    if (String.IsNullOrEmpty(fileName))
+                        return BadRequest("Filename is null.");
+
+                    if (string.IsNullOrEmpty(fileName) && fileName.IndexOfAny(Path.GetInvalidFileNameChars()) > 0)
+                        return BadRequest("Wrong file name.");
+
+                    if (fileName.Split('.').Length != 2)
+                        return BadRequest("File name must contains extension.");
+
+                    List<TagModel> documentTags = await GetTags(tagsString);
+
+                    DocumentMetadataModel documentMetadataModel = new DocumentMetadataModel()
+                    {
+                        Id = documentModel.Id,
+                        FileName = fileName,
+                    };
+
+                    List<MetadataTagsLinkModel> tagLinks = GetTagLinks(documentTags, documentMetadataModel);
+
+                    documentMetadataModel.MetadataTagsLinks.AddRange(tagLinks);
+
+                    await _metadataStorageManager.UpdateMetadata(documentMetadataModel);
+                    await _fileStorageManager.UpdateFileAsync(documentModel.Id.ToString(), fileData);
+
+                    transaction.Commit();
+                    return Ok("Document was successfuly updated.");
                 }
-
-                string[] tagsString = documentModel.Tags.Select(t => t.ToLower()).ToArray();
-
-                string fileDataInBase64 = documentModel.Data.FileDataBase64;
-
-                if (String.IsNullOrEmpty(fileDataInBase64))
-                    return BadRequest("File data is null.");
-
-                byte[] fileData = new byte[0];
-                if (!TryGetFromBase64String(fileDataInBase64, out fileData))
-                    return BadRequest("Cannot parse data from base 64 format.");
-
-                string fileName = documentModel.Data.FileName;
-
-                if (String.IsNullOrEmpty(fileName))
-                    return BadRequest("Filename is null.");
-
-                if (string.IsNullOrEmpty(fileName) && fileName.IndexOfAny(Path.GetInvalidFileNameChars()) > 0)
-                    return BadRequest("Wrong file name.");
-
-                if (fileName.Split('.').Length != 2)
-                    return BadRequest("File name must contains extension.");
-
-                List<TagModel> documentTags = await GetTags(tagsString);
-
-                DocumentMetadataModel documentMetadataModel = new DocumentMetadataModel()
+                catch (Exception ex)
                 {
-                    Id = documentModel.Id,
-                    FileName = fileName,
-                };
-
-                List<MetadataTagsLinkModel> tagLinks = GetTagLinks(documentTags, documentMetadataModel);
-
-                documentMetadataModel.MetadataTagsLinks.AddRange(tagLinks);
-
-                await _metadataStorageManager.UpdateMetadata(documentMetadataModel);
-                await _fileStorageManager.UpdateFileAsync(documentModel.Id.ToString(), fileData);
-
-                return Ok("Document was successfuly updated.");
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
+                    transaction.Rollback();
+                    return BadRequest(ex.Message);
+                }
             }
         }
 
