@@ -38,6 +38,11 @@ namespace DocumentService.Models
 
         public async Task SaveFileAsync(string fileName, byte[] fileData)
         {
+            if (Directory.Exists(fileName))
+            {
+                throw new Exception("Directory from config does not exists on HDD.");
+            }
+
             string path = Path.Combine(_basePath, fileName);
             if (!_fileWrapper.File.Exists(path))
             {
@@ -52,6 +57,11 @@ namespace DocumentService.Models
 
         public async Task UpdateFileAsync(string fileName, byte[] fileData)
         {
+            if (Directory.Exists(fileName))
+            {
+                throw new Exception("Directory from config does not exists on HDD.");
+            }
+
             string path = Path.Combine(_basePath, fileName);
             if (_fileWrapper.File.Exists(path))
             {
