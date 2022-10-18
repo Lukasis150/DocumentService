@@ -1,1 +1,0 @@
-The documents are send as a payload of POST request in JSON format and could be modified via PUT verb.
