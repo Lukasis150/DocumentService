@@ -3,7 +3,7 @@ using Microsoft.Extensions.Logging;
 using System.IO.Abstractions.TestingHelpers;
 using Moq;
 using DocumentServiceTests.Mocks;
-using DocumentService.Models;
+using DocumentService.Managers;
 
 namespace DocumentServiceTests
 {
