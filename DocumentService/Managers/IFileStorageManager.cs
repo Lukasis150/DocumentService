@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 
-namespace DocumentService.Models
+namespace DocumentService.Managers
 {
     public interface IFileStorageManager
     {

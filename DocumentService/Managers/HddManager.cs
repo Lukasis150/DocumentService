@@ -1,6 +1,6 @@
 ﻿using System.IO.Abstractions;
 
-namespace DocumentService.Models
+namespace DocumentService.Managers
 {
     public class HddManager : IFileStorageManager
     {

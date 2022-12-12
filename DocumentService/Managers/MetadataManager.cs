@@ -1,5 +1,6 @@
 ﻿using DocumentService.Controllers;
 using DocumentService.Data;
+using DocumentService.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
@@ -7,7 +8,7 @@ using System;
 using System.Linq;
 using System.Reflection.Metadata;
 
-namespace DocumentService.Models
+namespace DocumentService.Managers
 {
     public class MetadataManager : IMetadataManager
     {

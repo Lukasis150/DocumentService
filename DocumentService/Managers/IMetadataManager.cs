@@ -1,4 +1,6 @@
-﻿namespace DocumentService.Models
+﻿using DocumentService.Models;
+
+namespace DocumentService.Managers
 {
     public interface IMetadataManager
     {
